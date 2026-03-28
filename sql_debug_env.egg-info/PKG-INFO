@@ -1,0 +1,209 @@
+Metadata-Version: 2.4
+Name: sql-debug-env
+Version: 1.0.0
+Summary: OpenEnv-compatible RL environment for SQL query debugging and optimisation
+License: MIT
+Keywords: reinforcement-learning,openenv,sql,database,rl
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.110.0
+Requires-Dist: uvicorn[standard]>=0.27.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: openai>=1.12.0
+Requires-Dist: httpx>=0.26.0
+Requires-Dist: python-multipart>=0.0.9
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+
+# SQL Debug & Optimize RL Environment
+
+> **OpenEnv-compatible RL environment** for training AI agents to identify,
+> fix, and optimise broken SQL queries across three real-world database schemas.
+>
+> Built for the [Meta PyTorch × Scaler SST OpenEnv Hackathon 2026](https://www.scaler.com/school-of-technology/meta-pytorch-hackathon).
+
+---
+
+## Overview
+
+The agent receives a buggy SQL query and the full database schema, and must return corrected (and optionally optimised) SQL. Grading is **100% deterministic** for Easy and Medium tasks — queries are executed against an in-memory SQLite database and result sets are compared programmatically.
+
+| Difficulty | Task | Grader | Max Reward |
+|---|---|---|---|
+| **Easy** | Fix SQL syntax errors | Deterministic result-set comparison | 1.0 |
+| **Medium** | Fix semantic/logic bugs (wrong JOINs, bad aggregations) | Deterministic result-set comparison | 1.0 |
+| **Hard** | Fix bug + eliminate correlated subqueries / repeated scans | Correctness (0–0.6) + LLM query-plan judge (0–0.4) | 1.0 |
+
+**9 tasks total** across 3 real-world schemas: e-commerce, HR, and product analytics.
+
+---
+
+## What makes this environment unique
+
+- **100% deterministic grading for 6/9 tasks** — no LLM dependency means reproducible scores every time
+- **Three distinct database schemas** with realistic seed data (no toy data)
+- **Hard tasks require real optimisation** — CTEs, window functions, eliminating correlated subqueries
+- **SQLite is zero-dependency** — no external DB server needed
+
+---
+
+## Database Schemas
+
+### E-commerce (`customers`, `products`, `orders`, `order_items`)
+Real purchase funnel data: 5 customers, 7 orders, 10 order items, 5 products.
+
+### HR (`departments`, `employees`, `salaries`, `projects`, `assignments`)
+Workforce data: 4 departments, 7 employees, current + historical salary records, project assignments.
+
+### Analytics (`users`, `sessions`, `events`, `page_views`)
+Product analytics: 5 users across free/pro/enterprise plans, 8 sessions, event stream, page view log.
+
+---
+
+## Action Space
+
+```python
+class SQLDebugAction(BaseModel):
+    fixed_query: str        # Corrected (and optionally optimised) SQL
+    explanation: str | None  # Optional optimisation rationale (scored for HARD)
+```
+
+## Observation Space
+
+```python
+class SQLDebugObservation(BaseModel):
+    task_id: str
+    difficulty: str                  # "easy" | "medium" | "hard"
+    task_prompt: str                 # What the agent must fix
+    buggy_query: str                 # The broken SQL
+    schema: list[TableSchema]        # Full CREATE TABLE definitions
+    sample_data_description: str     # Human hint about the data
+    reward: float                    # Reward for previous step
+    done: bool
+    feedback: str                    # Grader explanation
+    success: bool                    # True if reward >= 0.5
+```
+
+---
+
+## Reward Function
+
+```
+EASY / MEDIUM:
+  reward = 1.0  if result set matches reference exactly
+  reward = 0.3  if row count matches but values differ (partial credit)
+  reward = 0.0  if query fails or wrong row count
+
+HARD:
+  reward = correctness × 0.6   (result set match, scaled)
+         + optimisation × 0.4  (LLM judge: 0–10 → 0–0.4)
+```
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness probe |
+| `POST` | `/reset` | Start new episode |
+| `POST` | `/step` | Submit `fixed_query`, get graded observation |
+| `GET` | `/state` | Current episode state |
+| `GET` | `/schema` | JSON schema for action/observation |
+| `GET` | `/tasks` | List all 9 tasks |
+
+---
+
+## Setup
+
+```bash
+# 1. Install
+pip install -e .
+
+# 2. Set env vars
+export API_BASE_URL="https://api-inference.huggingface.co/v1"
+export MODEL_NAME="Qwen/Qwen2.5-72B-Instruct"
+export HF_TOKEN="hf_your_token_here"
+
+# 3. Validate
+python validate.py
+```
+
+## Run locally
+
+```bash
+# Start server
+uvicorn sql_debug_env.server.app:app --host 0.0.0.0 --port 8000
+
+# Run inference
+python inference.py --direct
+# or
+python inference.py --server-url http://localhost:8000
+```
+
+## Docker
+
+```bash
+docker build -t sql-debug-env:latest -f sql_debug_env/server/Dockerfile .
+docker run -p 7860:7860 \
+  -e API_BASE_URL="$API_BASE_URL" \
+  -e MODEL_NAME="$MODEL_NAME" \
+  -e HF_TOKEN="$HF_TOKEN" \
+  sql-debug-env:latest
+```
+
+## Deploy to HF Spaces
+
+```bash
+huggingface-cli login
+huggingface-cli repo create sql-debug-env --type space --sdk docker
+git init && git add . && git commit -m "init"
+git remote add hf https://huggingface.co/spaces/YOUR_HF_USERNAME/sql-debug-env
+git push hf main
+```
+
+---
+
+## Task List
+
+| ID | Difficulty | Bug | Schema |
+|---|---|---|---|
+| `easy_001` | Easy | `JOINN` typo | E-commerce |
+| `easy_002` | Easy | `GRUOP` typo | HR |
+| `easy_003` | Easy | `==` instead of `=` in ON clause | Analytics |
+| `medium_001` | Medium | Missing `c.name` in GROUP BY | E-commerce |
+| `medium_002` | Medium | JOIN on wrong column (dept_id vs emp_id) | HR |
+| `medium_003` | Medium | `COUNT` should be `COUNT(DISTINCT ...)` | Analytics |
+| `hard_001` | Hard | Typo `'deliverd'` in HAVING + correlated subqueries | E-commerce |
+| `hard_002` | Hard | Filters on inactive salaries + correlated AVG | HR |
+| `hard_003` | Hard | HAVING excludes users + page_views scanned 3x | Analytics |
+
+---
+
+## Repository Structure
+
+```
+sql_debug_env/
+├── __init__.py
+├── models.py              # Action / Observation / State
+├── client.py              # HTTP client
+├── openenv.yaml           # OpenEnv manifest
+├── server/
+│   ├── app.py             # FastAPI server
+│   ├── environment.py     # Core Environment class
+│   ├── tasks.py           # 9 task definitions
+│   ├── graders.py         # Deterministic + LLM graders
+│   ├── db_fixtures.py     # SQLite DB factories + helpers
+│   ├── requirements.txt
+│   └── Dockerfile
+inference.py               # ← ROOT mandatory inference script
+validate.py                # Pre-submission validator
+pyproject.toml
+README.md
+```
+
+---
+
+## License
+MIT

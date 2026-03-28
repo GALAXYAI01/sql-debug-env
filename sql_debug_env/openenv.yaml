@@ -1,0 +1,32 @@
+name: sql_debug_env
+version: "1.0.0"
+description: >
+  A real-world RL environment where an AI agent learns to identify, fix,
+  and optimise broken SQL queries across three difficulty tiers.
+  Easy: fix syntax errors. Medium: fix semantic/logic bugs (wrong JOINs,
+  bad aggregations). Hard: fix correctness AND rewrite for better query
+  performance. Core grading is 100% deterministic via SQLite execution —
+  no LLM dependency for correctness scores.
+
+client:
+  class_name: SQLDebugEnv
+  module: sql_debug_env.client
+
+action:
+  class_name: SQLDebugAction
+  module: sql_debug_env.models
+
+observation:
+  class_name: SQLDebugObservation
+  module: sql_debug_env.models
+
+default_image: sql-debug-env:latest
+spec_version: 1
+
+tags:
+  - sql
+  - database
+  - debugging
+  - optimization
+  - real-world
+  - deterministic-grading
