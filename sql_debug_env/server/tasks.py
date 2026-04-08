@@ -58,6 +58,7 @@ EASY_TASKS: List[Task] = [
             "order_items(item_id, order_id, product_id, quantity, unit_price). "
             "5 products, 10 order items."
         ),
+        "grader": "grade_easy_medium",
     },
     {
         "task_id": "easy_002",
@@ -87,6 +88,7 @@ EASY_TASKS: List[Task] = [
             "employees(emp_id, name, dept_id, hire_date, job_title). "
             "4 departments, 7 employees."
         ),
+        "grader": "grade_easy_medium",
     },
     {
         "task_id": "easy_003",
@@ -118,6 +120,7 @@ EASY_TASKS: List[Task] = [
             "sessions(session_id, user_id, ...), page_views(view_id, session_id, page, duration_sec, viewed_at). "
             "5 users with plans: free, pro, enterprise."
         ),
+        "grader": "grade_easy_medium",
     },
 ]
 
@@ -161,6 +164,7 @@ MEDIUM_TASKS: List[Task] = [
             "customers, orders (status: delivered/pending/cancelled), order_items. "
             "Only delivered orders count."
         ),
+        "grader": "grade_easy_medium",
     },
     {
         "task_id": "medium_002",
@@ -191,6 +195,7 @@ MEDIUM_TASKS: List[Task] = [
             "departments, employees, salaries (emp_id, amount, from_date, to_date). "
             "Each employee has one current salary record."
         ),
+        "grader": "grade_easy_medium",
     },
     {
         "task_id": "medium_003",
@@ -223,6 +228,7 @@ MEDIUM_TASKS: List[Task] = [
             "users, sessions, events (event_type: signup, purchase, pageview). "
             "Users can have multiple sessions and multiple purchase events."
         ),
+        "grader": "grade_easy_medium",
     },
 ]
 
@@ -300,6 +306,7 @@ HARD_TASKS: List[Task] = [
         "sample_data_description": (
             "E-commerce: customers, orders (delivered/pending/cancelled), order_items, products with categories."
         ),
+        "grader": "grade_hard",
     },
     {
         "task_id": "hard_002",
@@ -354,6 +361,7 @@ HARD_TASKS: List[Task] = [
             "HR: employees, departments, salaries (to_date IS NULL = current salary). "
             "Engineers are in Engineering dept."
         ),
+        "grader": "grade_hard",
     },
     {
         "task_id": "hard_003",
@@ -420,6 +428,7 @@ HARD_TASKS: List[Task] = [
             "Analytics: users, sessions, page_views(view_id, session_id, page, duration_sec, viewed_at). "
             "Users may have 0 or more sessions."
         ),
+        "grader": "grade_hard",
     },
 ]
 
