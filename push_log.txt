@@ -1,7 +1,0 @@
-remote: -------------------------------------------------------------------------        
-remote: You are not authorized to push to this repo.        
-remote: Make sure that you are properly logged in.        
-remote: -------------------------------------------------------------------------        
-To https://huggingface.co/spaces/Shashank1205/sql-debug-env
- ! [remote rejected] main -> main (pre-receive hook declined)
-error: failed to push some refs to 'https://huggingface.co/spaces/Shashank1205/sql-debug-env'
