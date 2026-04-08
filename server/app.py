@@ -80,8 +80,3 @@ def list_tasks():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
-
-
-def main():
-    import uvicorn
-    uvicorn.run('sql_debug_env.server.app:app', host='0.0.0.0', port=7860)
