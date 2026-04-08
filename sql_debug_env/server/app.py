@@ -47,11 +47,11 @@ def list_tasks():
             "difficulty": t["difficulty"],
             "task_prompt": t["task_prompt"],
             "schema_hint": t["schema_hint"],
-            "grader": {
+            "graders": [{
                 "type": "programmatic" if t["difficulty"] in ("easy", "medium") else "hybrid",
                 "score_range": [0.0, 1.0],
                 "deterministic": t["difficulty"] in ("easy", "medium")
-            }
+            }]
         }
         for t in ALL_TASKS
     ]
