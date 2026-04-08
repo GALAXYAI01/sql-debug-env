@@ -30,3 +30,41 @@ tags:
   - optimization
   - real-world
   - deterministic-grading
+
+tasks:
+  - id: easy_001
+    grader:
+      class_name: grade_easy_medium
+      module: sql_debug_env.server.graders
+  - id: easy_002
+    grader:
+      class_name: grade_easy_medium
+      module: sql_debug_env.server.graders
+  - id: easy_003
+    grader:
+      class_name: grade_easy_medium
+      module: sql_debug_env.server.graders
+  - id: medium_001
+    grader:
+      class_name: grade_easy_medium
+      module: sql_debug_env.server.graders
+  - id: medium_002
+    grader:
+      class_name: grade_easy_medium
+      module: sql_debug_env.server.graders
+  - id: medium_003
+    grader:
+      class_name: grade_easy_medium
+      module: sql_debug_env.server.graders
+  - id: hard_001
+    grader:
+      class_name: grade_hard
+      module: sql_debug_env.server.graders
+  - id: hard_002
+    grader:
+      class_name: grade_hard
+      module: sql_debug_env.server.graders
+  - id: hard_003
+    grader:
+      class_name: grade_hard
+      module: sql_debug_env.server.graders
